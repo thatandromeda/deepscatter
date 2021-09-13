@@ -1,5 +1,6 @@
 node_modules
 public/tiles
 dist/
+dist/tiles/
 lc_etl_tiles/
 .vscode/

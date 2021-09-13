@@ -109,5 +109,5 @@ export class Renderer {
 }
 
 export class CanvasRenderer extends Renderer {
-  
+
 }

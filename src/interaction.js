@@ -86,7 +86,7 @@ export default class Zoom {
   }
 
   get tooltip_html() {
-    // a function that 
+    // a function that
     if (this._tooltip_html === undefined) {
       return label_from_point
     } else {
@@ -145,13 +145,13 @@ export default class Zoom {
 
     this.canvas.on('mousemove', (event) => {
       // Debouncing this is really important, it turns out.
-      if (Date.now() - last_fired < 1000 / 20) {
-        return;
-      }
+      // if (Date.now() - last_fired < 1000 / 20) {
+      //   return;
+      // }
       last_fired = Date.now();
       const p = renderer.color_pick(event.layerX, event.layerY);
+      console.log([event.layerX, event.layerY])
       const data = p ? [p] : [];
-
       const d = data[0];
       const annotations = d ? [
         {

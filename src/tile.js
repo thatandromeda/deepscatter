@@ -500,7 +500,7 @@ export class QuadTile extends Tile {
     return this._download;
   }
 
-  
+
   get children() {
     // create or return children.
     if (this._children !== undefined) {
@@ -561,7 +561,7 @@ export default class RootTile extends QuadTile {
       }
       array[i][2 ** depth] = '|';
     }
-    
+
     array[2 ** depth] = Array(2 ** depth + 1).fill('-');
 
     this.visit((tile) => {
