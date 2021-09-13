@@ -1,0 +1,74 @@
+<style>
+  .ttooltip {
+    z-index: 99
+  }
+</style>
+
+<body>
+  <h1>LC embedding ahoy.</h1>
+  <div id="deepscatter" style="position:fixed;top:0;left:0">
+  </div>
+  <button id="flip" style="z-index:99;position:fixed;">Change encoding</button>
+  <pre id="ident" style="z-index:99;position:fixed;"></pre>
+
+</body>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+
+<script type = "module">
+  import Scatterplot from './dist/deepscatter.es.js';
+  const select = d3.select
+  //  import { select } from 'd3-selection';
+  window.select = select; // For the click function below.
+  const prefs = {
+    "source_url" : "lc_etl_tiles",
+    "max_points" : 25000,
+    "alpha" : .7, // Target saturation for the full page.
+    "zoom_balance" : 0.09, // Rate at which points increase size. https://observablehq.com/@bmschmidt/zoom-strategies-for-huge-scatterplots-with-three-js
+    "point_size": 10, // Default point size before application of size scaling
+    "background_color": "#dfe2e8",
+    "click_function": "select('#ident').html(JSON.stringify(datum, undefined, 2))",
+    "encoding": {
+      "color": {
+        "field": "color",
+        "range": "rdylgn",  // change this to get different color schemes, per https://observablehq.com/@d3/color-schemes
+        "domain": [0, 9]
+      },
+      "x": {
+        field: "x",
+        transform: "literal"
+      },
+      "y": {
+        field: "y",
+        transform: "literal"
+      },
+    }
+  };
+
+
+  const colors = [
+    JSON.parse(JSON.stringify(prefs.encoding.color))
+  ]
+
+  const plot = new Scatterplot("#deepscatter")
+  plot.plotAPI(prefs);
+  window.plot = plot; // For debugging
+
+
+  // Simple animation demonstration.
+
+  let cycle = 0;
+
+  select("#flip").on("click", () => {
+    cycle += 1
+    const new_coding = {
+      "encoding": {
+        "x": {"field": cycle % 2 == 0 ? "x": "y"},
+        "y": {"field": cycle % 2 == 0 ? "y": "x"},
+        "color": colors[cycle % colors.length]
+      }
+    }
+    console.log(new_coding)
+    plot.plotAPI(new_coding)
+  })
+
+</script>
