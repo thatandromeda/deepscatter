@@ -15,27 +15,23 @@
 
 <script type = "module">
   import Scatterplot from './src/deepscatter.js';
-  const select = d3.select
-  //  import { select } from 'd3-selection';
+  import { select } from 'd3-selection';
   window.select = select; // For the click function below.
   const prefs = {
     "source_url" : "public/tiles",
     "max_points" : 5000,
     "alpha" : .7, // Target saturation for the full page.
     "zoom_balance" : 0.09, // Rate at which points increase size. https://observablehq.com/@bmschmidt/zoom-strategies-for-huge-scatterplots-with-three-js
-    "point_size": 10, // Default point size before application of size scaling
+    "point_size": 7, // Default point size before application of size scaling
     "background_color": "#dfe2e8",
     "encoding": {
       "color": {
-        // all the collections so far are abraham lincoln, so that's no good.
-        // also I think it struggles with lists in that field -- you may need
-        // something singular. because date actually totally works.
-        field: "date",
-        range: "turbo",  // change this to get different color schemes, per https://observablehq.com/@d3/color-schemes
+        field: "collections",
+        range: "category10",  // change this to get different color schemes, per https://observablehq.com/@d3/color-schemes
         domain: [-2047, 2047]
       },
       // labels/data/hover aren't working yet
-      "labels": ["collections", "title", "image_url", "date", "subjects", "url"],
+      // "labels": ["collections", "title", "image_url", "date", "subjects", "url"],
       "x": {
         field: "x",
         transform: "literal"
@@ -43,8 +39,29 @@
       "y": {
         field: "y",
         transform: "literal"
-      },
-    }
+      }
+    },
+    "tooltip_html": (function(datum) {
+      let output = '<dl>';
+      const labels = [
+        "collections", "title", "image_url", "date", "subjects", "url"
+      ]
+      for (const [k, v] of datum.entries()) {
+        if (!labels.includes(k)) {
+          continue;
+        } else {
+          // Private value.
+          if (k.match(/_dict_index/)) { continue; }
+          // Don't show missing data.
+          if (v === null) { continue; }
+          // Don't show empty data.
+          if (v === '') { continue; }
+        }
+        output += `<dt>${k}</dt>`;
+        output += `<dd>${v}<dd>`;
+      }
+      return `${output}</dl>`;
+     })
   };
 
   const colors = [
