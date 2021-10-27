@@ -74,7 +74,12 @@ export default class Zoom {
           .style('opacity', 0.75),
         (exit) => exit,
         (update) => update
-          .html((d) => this.tooltip_html(d.data)),
+          .html((d) => {
+            if (d === undefined) {
+              return
+            }
+            this.tooltip_html(d.data)
+          }),
       );
 
     els

@@ -2,6 +2,41 @@
   .ttooltip {
     z-index: 99
   }
+
+  .tooltip.container {
+    width: 300px;
+  }
+
+  .tooltip.container img {
+    float: left;
+    max-width: 33%;
+  }
+
+  .tooltip.container ul {
+    float: right;
+    max-width: 66%;
+    margin: 0
+  }
+
+  .tooltip.header {
+    background-color: #ff7f64;
+    padding: 5px;
+    font-size: 0.85em;
+  }
+
+  .tooltip.title {
+    font-size: 1.15em;
+    font-weight: normal;
+    padding: 5px 0 0 0;
+    margin-bottom: 0;
+  }
+
+  .tooltip.date {
+    font-variant: small-caps;
+    color: #666;
+    padding-bottom: 0.5em;
+  }
+
 </style>
 
 <body>
@@ -42,25 +77,24 @@
       }
     },
     "tooltip_html": (function(datum) {
-      let output = '<dl>';
+      let img = `<img src="${datum["image_url"]}" alt="photograph of original document">`
+      let header = `<div class="tooltip header">${datum["collections"].slice(2, -2)}</div>`
+      let title = `<h3 class="tooltip title">${datum["title"]}</h3>`
+      let date = `<div class="tooltip date">${datum["date"].getFullYear()} &mdash; <a href='${datum["url"]}'>original</a></span>`
+      let description = `<div class="tooltip description">${datum['description']}</div>`
+      let listdata = '';
       const labels = [
-        "collections", "title", "image_url", "date", "subjects", "url"
+        "date", "subjects", "url"
       ]
-      for (const [k, v] of datum.entries()) {
-        if (!labels.includes(k)) {
-          continue;
-        } else {
-          // Private value.
-          if (k.match(/_dict_index/)) { continue; }
-          // Don't show missing data.
-          if (v === null) { continue; }
-          // Don't show empty data.
-          if (v === '') { continue; }
-        }
-        output += `<dt>${k}</dt>`;
-        output += `<dd>${v}<dd>`;
+      let subjects = JSON.parse(datum['subjects'].replace(/\'/g, '\"'))
+
+      let subjects_html = ''
+      for (const subj of subjects) {
+        // Why is subj an Object and not a dict? Dunno.
+        let key = Object.keys(subj)[0]
+        subjects_html += `<li><a href="${subj[key].replace('fo=json', '')}">${key}</a></li>`
       }
-      return `${output}</dl>`;
+      return `<div class="tooltip container">${header}${title}${date}<div>${description}${img}<ul>${subjects_html}</ul></div></div>`;
      })
   };
 
