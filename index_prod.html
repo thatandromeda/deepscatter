@@ -6,10 +6,14 @@
 
 <body>
   <h1>Welcome to a demo/test page.</h1>
-  <div id="deepscatter" style="position:fixed;top:0;left:0">
+  <div id="deepscatter" style="position:fixed;top:50;left:0">
   </div>
   <button id="flip" style="z-index:99;position:fixed;">Change encoding</button>
-  <pre id="ident" style="z-index:99;position:fixed;"></pre>
+  <select id="stateSelector">
+    <option value="AK">Alaska</option>
+    <option value="HI">Hawaii</option>
+    <option value="WV">West Virginia</option>
+  </select>
 
 </body>
 <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -18,27 +22,43 @@
   import Scatterplot from './dist/deepscatter.es.js';
   const select = d3.select
 //  import { select } from 'd3-selection';
-  window.select = select; // For the click function below.
+  window.select = select; // For the click function in prefs.
+
+  var stateSelector = document.getElementById("stateSelector");
+  var state = stateSelector.text;
+  let encoding = {}
+  if (true) {
+    encoding = {
+      'filter': {
+        field: 'state',
+        op: 'eq',
+        a: 'a'
+      }
+    }
+  } else {
+    encoding = {
+      "color": {
+        "field": "class",
+        "range": "category10",
+        "domain": [-2047, 2047]
+    }
+  }
+
   const prefs = {
     "source_url" : "/public/tiles/",
-    "max_points" : 25000, // a full cap.
+    "max_points" : 25000, // full cap = 10000.
     "alpha" : .7, // Target saturation for the full page.
     "zoom_balance" : 0.09, // Rate at which points increase size. https://observablehq.com/@bmschmidt/zoom-strategies-for-huge-scatterplots-with-three-js
     "point_size": 10, // Default point size before application of size scaling
     "background_color": "#EEEDDE",
     "click_function": "select('#ident').html(JSON.stringify(datum, undefined, 2))",
-    "encoding": {
-      "color": {
-        "field": "class",
-        "range": "category10",
-        "domain": [-2047, 2047] 
-      },
+    "encoding": encoding,
       "x": {
         field: "x",
         transform: "literal"
       },
       "y": {
-        field: "y", 
+        field: "y",
         transform: "literal"
       },
       "size": {
@@ -56,12 +76,12 @@
     {
         "field": "quantity",
         "range": "viridis",
-        "domain": [0, 1] 
+        "domain": [0, 1]
     },
     {
       "field": "x",
       "range": "viridis",
-      "domain": [-3, 3] 
+      "domain": [-3, 3]
     }
   ]
 

@@ -31,27 +31,87 @@
     margin-bottom: 0;
   }
 
-  .tooltip.date {
+  .tooltip.date, .tooltip .subjects {
     font-variant: small-caps;
     color: #666;
     padding-bottom: 0.5em;
   }
 
+  .frontmatter {
+    margin: 50px 0;
+  }
 </style>
 
 <body>
-  <h1>LC embedding ahoy.</h1>
-  <div id="deepscatter" style="position:fixed;top:0;left:0">
+  <div id="frontmatter">
+    <h1>LC embedding ahoy.</h1>
+    <select id="stateSelector">
+      <option value="default">Filter by state</option>
+      <option value="Alabama">Alabama</option>
+      <option value="Alaska">Alaska</option>
+      <option value="Arizona">Arizona</option>
+      <option value="Arkansas">Arkansas</option>
+      <option value="California">California</option>
+      <option value="Colorado">Colorado</option>
+      <option value="Connecticut">Connecticut</option>
+      <option value="Delaware">Delaware</option>
+      <option value="Florida">Florida</option>
+      <option value="Georgia">Georgia</option>
+      <option value="Hawaii">Hawaii</option>
+      <option value="Idaho">Idaho</option>
+      <option value="Illinois">Illinois</option>
+      <option value="Indiana">Indiana</option>
+      <option value="Iowa">Iowa</option>
+      <option value="Kansas">Kansas</option>
+      <option value="Kentucky">Kentucky</option>
+      <option value="Louisiana">Louisiana</option>
+      <option value="Maine">Maine</option>
+      <option value="Maryland">Maryland</option>
+      <option value="Massachusetts">Massachusetts</option>
+      <option value="Michigan">Michigan</option>
+      <option value="Minnesota">Minnesota</option>
+      <option value="Mississippi">Mississippi</option>
+      <option value="Missouri">Missouri</option>
+      <option value="Montana">Montana</option>
+      <option value="Nebraska">Nebraska</option>
+      <option value="Nevada">Nevada</option>
+      <option value="New Hampshire">New Hampshire</option>
+      <option value="New Jersey">New Jersey</option>
+      <option value="New Mexico">New Mexico</option>
+      <option value="New York">New York</option>
+      <option value="North Carolina">North Carolina</option>
+      <option value="North Dakota">North Dakota</option>
+      <option value="Ohio">Ohio</option>
+      <option value="Oklahoma">Oklahoma</option>
+      <option value="Oregon">Oregon</option>
+      <option value="Pennsylvania">Pennsylvania</option>
+      <option value="Rhode Island">Rhode Island</option>
+      <option value="South Carolina">South Carolina</option>
+      <option value="South Dakota">South Dakota</option>
+      <option value="Tennessee">Tennessee</option>
+      <option value="Texas">Texas</option>
+      <option value="Utah">Utah</option>
+      <option value="Vermont">Vermont</option>
+      <option value="Virginia">Virginia</option>
+      <option value="Washington">Washington</option>
+      <option value="West Virginia">West Virginia</option>
+      <option value="Wisconsin">Wisconsin</option>
+      <option value="Wyoming">Wyoming</option>
+    </select>
+    <div id="ident">
+    </div>
   </div>
-  <pre id="ident" style="z-index:99;position:fixed;"></pre>
-
+  <div id="deepscatter">
+  </div>
 </body>
+
 <script src="https://d3js.org/d3.v7.min.js"></script>
 
 <script type = "module">
   import Scatterplot from './src/deepscatter.js';
   import { select } from 'd3-selection';
-  window.select = select; // For the click function below.
+  window.select = select; // For the click function in prefs.
+
   const prefs = {
     "source_url" : "public/tiles",
     "max_points" : 5000,
@@ -59,6 +119,7 @@
     "zoom_balance" : 0.09, // Rate at which points increase size. https://observablehq.com/@bmschmidt/zoom-strategies-for-huge-scatterplots-with-three-js
     "point_size": 7, // Default point size before application of size scaling
     "background_color": "#dfe2e8",
+    // "click_function": "select('#ident').html(JSON.stringify(datum, undefined, 2))",
     "encoding": {
       "color": {
         field: "collections",
@@ -77,24 +138,52 @@
       }
     },
     "tooltip_html": (function(datum) {
-      let img = `<img src="${datum["image_url"]}" alt="photograph of original document">`
+
+      console.log(datum)
+      let img = (datum["image_url"]) ? `<img src="${datum["image_url"]}" alt="photograph of original document">` : ''
       let header = `<div class="tooltip header">${datum["collections"].slice(2, -2)}</div>`
       let title = `<h3 class="tooltip title">${datum["title"]}</h3>`
-      let date = `<div class="tooltip date">${datum["date"].getFullYear()} &mdash; <a href='${datum["url"]}'>original</a></span>`
-      let description = `<div class="tooltip description">${datum['description']}</div>`
+      let date = `<div class="tooltip date">${datum['date']} &mdash; <a href='${datum["url"]}'>original</a></div>`
+      let description = (datum["description"]) ? `<div class="tooltip description">${datum['description'].slice(2, -2)}</div>` : ''
       let listdata = '';
       const labels = [
         "date", "subjects", "url"
       ]
-      let subjects = JSON.parse(datum['subjects'].replace(/\'/g, '\"'))
+
+      // What's up with this weird replacement?
+      // When quadfeather writes tiles, it uses single quotes to enclose
+      // key/value pairs, even if the original csv used double quotes. This
+      // makes them invalid JSON. (There's an exception, which is if the key
+      // or value included an apostrophe. In this case quadfeather uses double
+      // quotes to preserve the parse.)
+      // We can't just do a global search/replace to turn ' into ", since some
+      // ' characters are apostrophes and not delimiters.
+      // Therefore, we:
+      // 1) Find everything which is an apostrophe (that is, a ' surrounded by
+      //    letters) and replace it with a placeholder, so it isn't caught up
+      //    in step 2;
+      // 2) Replace all remaining single quotes with double quotes;
+      // 3) Switch the placeholder back to an apostrophe;
+      const reg = /([a-zA-Z]+)'([a-zA-Z]+)/g
+      let subjects = ''
+      try {
+        subjects = JSON.parse(
+          datum['subjects'].replaceAll(reg, "$1!!!!!$2")
+            .replaceAll("'", '"')
+            .replaceAll("!!!!!", "'")
+        )
+      } catch (e) {
+        console.log(datum['subjects'])
+        subjects = 'nah'
+      }
 
       let subjects_html = ''
       for (const subj of subjects) {
         // Why is subj an Object and not a dict? Dunno.
         let key = Object.keys(subj)[0]
-        subjects_html += `<li><a href="${subj[key].replace('fo=json', '')}">${key}</a></li>`
+        subjects_html += `<li><a href="${subj[key].replaceAll('&fo=json', '').replaceAll('fo=json', '')}">${key}</a></li>`
       }
-      return `<div class="tooltip container">${header}${title}${date}<div>${description}${img}<ul>${subjects_html}</ul></div></div>`;
+      return `<div class="tooltip container">${header}${title}${date}<div>${description}${img}<ul class="subjects">${subjects_html}</ul></div></div>`;
      })
   };
 
@@ -104,5 +193,24 @@
 
   const plot = new Scatterplot("#deepscatter")
   plot.plotAPI(prefs);
-  window.plot = plot; // For debugging
+
+  let state = "['default']";
+
+  document.getElementById('stateSelector').addEventListener('change', function() {
+    state = `['${this.value}']`;
+
+    if (state == "['default']") {
+      prefs.encoding['filter1'] = {
+        "lambda": `states => true`
+      }
+    } else {
+      // filter will be aliased to filter1
+      prefs.encoding['filter1'] = {
+        "lambda": `states => (states == ${state})`
+      }
+      console.log(state)
+    }
+    console.log(prefs.encoding)
+    plot.plotAPI(prefs);
+  });
 </script>
