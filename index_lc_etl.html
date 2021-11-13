@@ -15,7 +15,7 @@
   .tooltip.container ul {
     float: right;
     max-width: 66%;
-    margin: 0
+    margin: 0;
   }
 
   .tooltip.header {
@@ -98,8 +98,6 @@
       <option value="Wisconsin">Wisconsin</option>
       <option value="Wyoming">Wyoming</option>
     </select>
-    <div id="ident">
-    </div>
   </div>
   <div id="deepscatter">
   </div>
@@ -119,7 +117,7 @@
     "zoom_balance" : 0.09, // Rate at which points increase size. https://observablehq.com/@bmschmidt/zoom-strategies-for-huge-scatterplots-with-three-js
     "point_size": 7, // Default point size before application of size scaling
     "background_color": "#dfe2e8",
-    // "click_function": "select('#ident').html(JSON.stringify(datum, undefined, 2))",
+    "click_function": "select('.tooltip').html('you clicked it')",
     "encoding": {
       "color": {
         field: "collections",
@@ -138,8 +136,6 @@
       }
     },
     "tooltip_html": (function(datum) {
-
-      console.log(datum)
       let img = (datum["image_url"]) ? `<img src="${datum["image_url"]}" alt="photograph of original document">` : ''
       let header = `<div class="tooltip header">${datum["collections"].slice(2, -2)}</div>`
       let title = `<h3 class="tooltip title">${datum["title"]}</h3>`
@@ -197,7 +193,7 @@
   let state = "['default']";
 
   document.getElementById('stateSelector').addEventListener('change', function() {
-    state = `['${this.value}']`;
+    let state = `${this.value}`;
 
     if (state == "['default']") {
       prefs.encoding['filter1'] = {
@@ -208,9 +204,7 @@
       prefs.encoding['filter1'] = {
         "lambda": `states => (states == ${state})`
       }
-      console.log(state)
     }
-    console.log(prefs.encoding)
     plot.plotAPI(prefs);
   });
 </script>
