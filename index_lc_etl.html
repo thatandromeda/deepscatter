@@ -135,7 +135,7 @@
 <script src="https://d3js.org/d3.v7.min.js"></script>
 
 <script type = "module">
-  import Scatterplot from './src/deepscatter.js';
+  import Scatterplot from './src/deepscatter.ts';
   import { select } from 'd3-selection';
   window.select = select; // For the click function in prefs.
 
@@ -229,7 +229,7 @@
         'x':[params.xmin, params.xmax],
         'y':[params.ymin, params.ymax]
       }}})
-    }    
+    }
   }
 
   const colorSelector = document.querySelector('#colorize');
