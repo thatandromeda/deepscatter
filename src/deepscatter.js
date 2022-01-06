@@ -49,10 +49,12 @@ export default class Scatterplot {
       .data([1])
       .join("div")
       .attr("class", "deepscatter_container")
-      .style("position", "absolute")
-    // Styling this as position absolute with no top/left
-    // forces the children to inherit the relative position
-    // of the div, not the div's parent.
+      //.style("position", "absolute")
+      // Styling this as position absolute with no top/left
+      // forces the children to inherit the relative position
+      // of the div, not the div's parent.
+      .style("width", width + 'px')
+      .style("height", height + 'px')
 
     if (this.div.empty()) {
       console.error(selector);
